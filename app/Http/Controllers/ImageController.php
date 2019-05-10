@@ -55,12 +55,20 @@ class ImageController extends Controller
             //Resize image here
             $thumbnailpath = public_path('storage/profile_images/thumbnail/' . $filenametostore);
             $img = Image::make($thumbnailpath);
-            // Agrega una marca de agua si se desea
-            $img->insert(public_path('img/marca.png'), 'bottom-right', 10, 10);
-            // Despues se re-ajusta y se guarda
+
+            // Agrega primero una marca de agua y despues la resizea
+            /* $img->insert(public_path('img/marca.png'), 'bottom-right', 10, 10);
+
             $img->resize(640, 480, function ($constraint) {
                 $constraint->aspectRatio();
+            });*/
+
+            // Recorta en proporciones deseadas y despues le agrega la marca de agua
+            $img->fit(640, 360, function ($constraint) {
+                $constraint->upsize();
             });
+            $img->insert(public_path('img/marca.png'), 'bottom-right', 10, 10);
+
             $img->save($thumbnailpath);
 
             return redirect('images')->with('success', "Image uploaded successfully.");
