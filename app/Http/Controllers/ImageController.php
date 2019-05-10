@@ -35,30 +35,34 @@ class ImageController extends Controller
      */
     public function store(Request $request)
     {
-        if($request->hasFile('profile_image')) {
+        if ($request->hasFile('profile_image')) {
             //get filename with extension
             $filenamewithextension = $request->file('profile_image')->getClientOriginalName();
-     
+
             //get filename without extension
             $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
-     
+
             //get file extension
             $extension = $request->file('profile_image')->getClientOriginalExtension();
-     
+
             //filename to store
-            $filenametostore = $filename.'_'.time().'.'.$extension;
-     
+            $filenametostore = $filename . '_' . time() . '.' . $extension;
+
             //Upload File
             $request->file('profile_image')->storeAs('public/profile_images', $filenametostore);
             $request->file('profile_image')->storeAs('public/profile_images/thumbnail', $filenametostore);
-     
+
             //Resize image here
-            $thumbnailpath = public_path('storage/profile_images/thumbnail/'.$filenametostore);
-            $img = Image::make($thumbnailpath)->resize(400, 150, function($constraint) {
+            $thumbnailpath = public_path('storage/profile_images/thumbnail/' . $filenametostore);
+            $img = Image::make($thumbnailpath);
+            // Agrega una marca de agua si se desea
+            $img->insert(public_path('img/marca.png'), 'bottom-right', 10, 10);
+            // Despues se re-ajusta y se guarda
+            $img->resize(640, 480, function ($constraint) {
                 $constraint->aspectRatio();
             });
             $img->save($thumbnailpath);
-     
+
             return redirect('images')->with('success', "Image uploaded successfully.");
         }
     }
